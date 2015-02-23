@@ -97,29 +97,51 @@ int32_t RaceLogicDevice::read()
 
 int32_t RaceLogicDevice::readMessage()
 {
-    const unsigned int HEADER_SIZE = 7;
-    char header[HEADER_SIZE];
-    DWORD dwRead;
-    OVERLAPPED osReader = {0};
-    // Read data from serial port
-    BOOL isRead = ReadFile(m_serialHandle, header, HEADER_SIZE, &dwRead, &osReader);
+	// Try to find header start
+	// Time out if header sign not found within a certain amount of bytes
+	const unsigned int TIMEOUT_ERROR = 10240;
+	unsigned int readChars = 0;
+	char headerChar;
+	DWORD dwRead;
+	OVERLAPPED osReader = {0};
+	bool headerCharFound = false;
+	while (!headerCharFound && readChars < TIMEOUT_ERROR) {
+		BOOL isRead = ReadFile(m_serialHandle, &headerChar, 1, &dwRead, &osReader);
+		readChars++;
+		if (isRead) {
+			if (headerChar == '$') {
+				headerCharFound = true;
+			}
+		}
+	}
 
-    if (isRead) {
-        // Interpret header
-        if (strncmp(header, "$VBOX3i", HEADER_SIZE) == 0) {
-            return readVBox3iMessage();
-        } else if (strncmp(header, "$NEWCAN", HEADER_SIZE) == 0) {
-            return readNewCanMessage();
-        } else {
-            std::cerr << "Unknown header: " << header << std::endl;
-            close();
-            return READ_ERROR;
-        }
-    } else {
-        std::cerr << "Reading from serial port failed" << std::endl;
-        close();
-        return READ_ERROR;
-    }
+	if (headerCharFound) {
+		const unsigned int HEADER_SIZE = 6;
+		char header[HEADER_SIZE];
+		// Read data from serial port
+		BOOL isRead = ReadFile(m_serialHandle, header, HEADER_SIZE, &dwRead, &osReader);
+
+		if (isRead) {
+			// Interpret header
+			if (strncmp(header, "VBOX3i", HEADER_SIZE) == 0) {
+				return readVBox3iMessage();
+			} else if (strncmp(header, "NEWCAN", HEADER_SIZE) == 0) {
+				return readNewCanMessage();
+			} else {
+				std::cerr << "Unknown header: " << header << std::endl;
+				close();
+				return READ_ERROR;
+			}
+		} else {
+			std::cerr << "Reading from serial port failed" << std::endl;
+			close();
+			return READ_ERROR;
+		}
+	} else {
+		std::cerr << "Could not find header. Timout!" << std::endl;
+		close();
+		return READ_ERROR;
+	}
 }
 
 int32_t RaceLogicDevice::readVBox3iMessage()
@@ -635,6 +657,7 @@ std::string RaceLogicDevice::degreesFromMinutes(double decimalMinutes)
 RaceLogicDevice* rl3_get_device(char* port) { return new RaceLogicDevice(std::string(port)); }
 int32_t rl3_open_device(RaceLogicDevice* device) { return device->open() == 0 ? EXIT_SUCCESS : EXIT_FAILURE; }
 int32_t rl3_close_device(RaceLogicDevice* device) { return device->close() == 0 ? EXIT_SUCCESS : EXIT_FAILURE;}
+int32_t rl3_device_is_open(RaceLogicDevice* device) { return device->isOpen() ? 1 : 0; }
 int32_t rl3_delete_device(RaceLogicDevice* device) { delete device; return EXIT_SUCCESS;}
 int32_t rl3_read_data(RaceLogicDevice* device) { return device->read() == 0 ? EXIT_SUCCESS : EXIT_FAILURE; }
 uint8_t rl3_get_satelites(RaceLogicDevice* device) { return device->satelites(); }

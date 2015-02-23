@@ -225,6 +225,9 @@ extern int32_t rl3_open_device(RaceLogicDevice* device);
 /* Close device */
 extern int32_t rl3_close_device(RaceLogicDevice* device);
 
+/* Device is open */
+extern int32_t rl3_device_is_open(RaceLogicDevice* device);
+
 /* Delete device from memory */
 extern int32_t rl3_delete_device(RaceLogicDevice* device);
 

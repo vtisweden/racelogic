@@ -26,9 +26,7 @@ int main()
 		char* lat_str = (char *) malloc(coordinate_str_len);
 		char* long_str = (char *) malloc(coordinate_str_len); 
 
-		int i;
-
-		for (i = 0; i < 1000; i++) {
+		while (rl3_device_is_open(device) != 0) {
 			// Read packets
 			if (rl3_read_data(device) == EXIT_SUCCESS) {
 				if (rl3_get_time_str(device, time_str, time_str_len) == EXIT_SUCCESS) {

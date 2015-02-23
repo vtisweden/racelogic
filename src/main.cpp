@@ -18,8 +18,8 @@ int main()
 		return 1;
 	}
 	if (device->open() == RaceLogicDevice::SUCCESS) {
-		for (int i = 0; i < 1000; ++i) {
-			// Read packets
+		// Read packets
+		while(device->isOpen()) {
 			if (device->read() == RaceLogicDevice::SUCCESS) {
 				std::cout << "Time: " << device->timeString() << std::endl;
 				std::cout << "Satelites: " << (int) device->satelites() << std::endl;

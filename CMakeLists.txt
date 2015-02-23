@@ -4,6 +4,10 @@ SET(CMAKE_ECLIPSE_GENERATE_LINKED_RESOURCES FALSE)
 
 PROJECT(RaceLogic)
 
+SET(RACELOGIC_VERSION_MAJOR 1)
+SET(RACELOGIC_VERSION_MINOR 0)
+SET(RACELOGIC_VERSION_BUILD 0)
+
 # Show relative paths options
 OPTION(CMAKE_USE_RELATIVE_PATHS "If true, cmake will use relative paths in makefiles and projects." ON)
 

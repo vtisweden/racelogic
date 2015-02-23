@@ -502,12 +502,12 @@ int32_t RaceLogicDevice::readNewCanMessage()
     char* data = new char[dataSize]();
     // Read data from serial port
     ReadFile(m_serialHandle, data, dataSize, &dwRead, &osReader);
-    size_t i = 0;
-
-    for (bufPos = 0; bufPos < dataSize - 2; ++i) {
-        float value = 0.0;
+    size_t j = 0;
+	uint32_t value = 0;
+    for (bufPos = 0; bufPos < dataSize - 2; ++j) {
         readValue(value, data, bufPos);
-        m_newCan[i] = value;
+        value = ntohl(value);
+		m_newCan[j] = *reinterpret_cast<float*>(&value);
     }
 
     // Read checksum
